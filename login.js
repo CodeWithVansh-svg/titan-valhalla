@@ -92,6 +92,12 @@ function registerUser(username, email, password, phone, ffUid) {
     });
 
     saveUsers(users);
+
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
+        username: username.trim(),
+        email: normalizedEmail
+    }));
+
     return { success: true, message: 'Account created successfully. You can now log in.' };
 }
 
