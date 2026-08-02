@@ -29,29 +29,64 @@
                 <p id="danger-reset-message" class="mt-3 text-sm font-medium"></p>
             </div>
 
-            <div id="room-config" class="mt-6 bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">Room Settings</h3>
+            <div id="lonewolf-room-config" class="mt-6 bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">⚔️ Lonewolf 1v1 — Room Settings</h3>
                 <div class="space-y-5">
                     <label class="block">
                         <span class="block text-gray-900 font-semibold mb-2">Room ID</span>
-                        <input id="room-name-input" type="text" placeholder="e.g. LonewolfRoom1" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                        <input id="lonewolf-room-name-input" type="text" placeholder="e.g. LonewolfRoom1" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
                     </label>
                     <label class="block">
                         <span class="block text-gray-900 font-semibold mb-2">Room Password</span>
-                        <input id="room-pass-input" type="text" placeholder="Set room password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                        <input id="lonewolf-room-pass-input" type="text" placeholder="Set room password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
                     </label>
                     <label class="block">
                         <span class="block text-gray-900 font-semibold mb-2">Join Before (Time)</span>
-                        <input id="room-deadline-input" type="time" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                        <span class="block text-gray-500 text-xs mt-1">Optional. Sets a daily cutoff time (e.g. 7:00 PM). Leave blank for no deadline.</span>
+                        <input id="lonewolf-room-deadline-input" type="time" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                        <span class="block text-gray-500 text-xs mt-1">Optional. Room ID & password auto-reveal to joined players 5 minutes before this time. Leave blank to reveal immediately on join.</span>
+                    </label>
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Description</span>
+                        <textarea id="lonewolf-room-description-input" rows="3" placeholder="e.g. Rules, map, timing notes for players..." class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300"></textarea>
+                        <span class="block text-gray-500 text-xs mt-1">Shown on the tournament card to all players, joined or not.</span>
                     </label>
                 </div>
                 <div class="flex gap-3 flex-wrap mt-6">
-                    <button id="save-room-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Save Room</button>
-                    <button id="reset-room-btn" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300 relative overflow-hidden">Reset Room</button>
+                    <button id="lonewolf-save-room-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Save Room</button>
+                    <button id="lonewolf-reset-room-btn" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300 relative overflow-hidden">Reset Room</button>
                 </div>
-                <p id="room-saved-message" class="mt-4 text-gray-600 text-sm font-medium"></p>
+                <p id="lonewolf-room-saved-message" class="mt-4 text-gray-600 text-sm font-medium"></p>
             </div>
+
+            <div id="cs1v1-room-config" class="mt-6 bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">🔫 CS 1v1 Custom — Room Settings</h3>
+                <div class="space-y-5">
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Room ID</span>
+                        <input id="cs1v1-room-name-input" type="text" placeholder="e.g. CSRoom1" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Room Password</span>
+                        <input id="cs1v1-room-pass-input" type="text" placeholder="Set room password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Join Before (Time)</span>
+                        <input id="cs1v1-room-deadline-input" type="time" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                        <span class="block text-gray-500 text-xs mt-1">Optional. Room ID & password auto-reveal to joined players 5 minutes before this time. Leave blank to reveal immediately on join.</span>
+                    </label>
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Description</span>
+                        <textarea id="cs1v1-room-description-input" rows="3" placeholder="e.g. Rules, map, timing notes for players..." class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300"></textarea>
+                        <span class="block text-gray-500 text-xs mt-1">Shown on the tournament card to all players, joined or not.</span>
+                    </label>
+                </div>
+                <div class="flex gap-3 flex-wrap mt-6">
+                    <button id="cs1v1-save-room-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Save Room</button>
+                    <button id="cs1v1-reset-room-btn" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300 relative overflow-hidden">Reset Room</button>
+                </div>
+                <p id="cs1v1-room-saved-message" class="mt-4 text-gray-600 text-sm font-medium"></p>
+            </div>
+
             <div id="withdrawal-requests-section" class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
                 <h3 class="text-xl font-bold text-gray-900 mb-4">💸 Withdrawal Requests</h3>
                 <ul id="withdrawal-requests-list" class="space-y-2"></ul>
