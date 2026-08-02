@@ -84,7 +84,11 @@ function registerUser(username, email, password, phone, ffUid) {
         upiId: '',
         participated: false,
         roomName: '',
-        roomPassword: ''
+        roomPassword: '',
+        matches: {
+            lonewolf: { participated: false, roomName: '', roomPassword: '' },
+            cs1v1: { participated: false, roomName: '', roomPassword: '' }
+        }
     });
 
     saveUsers(users);
