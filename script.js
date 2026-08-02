@@ -89,6 +89,54 @@ function formatDeadline(timeValue) {
     return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
 }
 
+const MATCHES = [
+    { id: 'lonewolf', label: 'Lonewolf 1v1 Custom' },
+    { id: 'cs1v1', label: 'CS 1v1 Custom' }
+];
+
+function getMatchState(user, matchId) {
+    if (user.matches && user.matches[matchId]) {
+        return user.matches[matchId];
+    }
+    if (matchId === 'lonewolf' && user.participated) {
+        return { participated: true, roomName: user.roomName || '', roomPassword: user.roomPassword || '' };
+    }
+    return { participated: false, roomName: '', roomPassword: '' };
+}
+
+function setMatchState(user, matchId, state) {
+    if (!user.matches) {
+        user.matches = {};
+    }
+    user.matches[matchId] = state;
+    if (matchId === 'lonewolf') {
+        user.participated = state.participated;
+        user.roomName = state.roomName;
+        user.roomPassword = state.roomPassword;
+    }
+}
+
+function getMatchDeadlineDate(matchId) {
+    const value = localStorage.getItem(`${matchId}-room-deadline`) || '';
+    if (!/^\d{2}:\d{2}$/.test(value)) {
+        return null;
+    }
+    const [hoursStr, minutesStr] = value.split(':');
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+}
+
+function isMatchRoomRevealed(matchId) {
+    const deadlineDate = getMatchDeadlineDate(matchId);
+    if (!deadlineDate) {
+        return true;
+    }
+    const revealAt = deadlineDate.getTime() - 5 * 60 * 1000;
+    return Date.now() >= revealAt;
+}
+
 function getCurrentUser() {
     try {
         return JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || 'null');
@@ -227,6 +275,11 @@ function renderDashboard() {
                 localStorage.removeItem('lonewolf-room-name');
                 localStorage.removeItem('lonewolf-room-password');
                 localStorage.removeItem('lonewolf-room-deadline');
+                localStorage.removeItem('lonewolf-description');
+                localStorage.removeItem('cs1v1-room-name');
+                localStorage.removeItem('cs1v1-room-password');
+                localStorage.removeItem('cs1v1-room-deadline');
+                localStorage.removeItem('cs1v1-description');
                 localStorage.removeItem('remembered-login');
 
                 if (dangerResetMessage) {
@@ -243,91 +296,110 @@ function renderDashboard() {
             tournamentButton.classList.remove('hidden');
         }
 
-        const roomNameInput = document.getElementById('room-name-input');
-        const roomPassInput = document.getElementById('room-pass-input');
-        const roomDeadlineInput = document.getElementById('room-deadline-input');
-        const roomSavedMessage = document.getElementById('room-saved-message');
-        const saveRoomButton = document.getElementById('save-room-btn');
-        const storedRoomName = localStorage.getItem('lonewolf-room-name') || '';
-        const storedRoomPass = localStorage.getItem('lonewolf-room-password') || '';
-        const storedRoomDeadline = localStorage.getItem('lonewolf-room-deadline') || '';
+        function setupRoomConfig(matchId, label) {
+            const roomNameInput = document.getElementById(`${matchId}-room-name-input`);
+            const roomPassInput = document.getElementById(`${matchId}-room-pass-input`);
+            const roomDeadlineInput = document.getElementById(`${matchId}-room-deadline-input`);
+            const roomDescInput = document.getElementById(`${matchId}-room-description-input`);
+            const roomSavedMessage = document.getElementById(`${matchId}-room-saved-message`);
+            const saveRoomButton = document.getElementById(`${matchId}-save-room-btn`);
+            const storedRoomName = localStorage.getItem(`${matchId}-room-name`) || '';
+            const storedRoomPass = localStorage.getItem(`${matchId}-room-password`) || '';
+            const storedRoomDeadline = localStorage.getItem(`${matchId}-room-deadline`) || '';
+            const storedDescription = localStorage.getItem(`${matchId}-description`) || '';
 
-        if (roomNameInput) {
-            roomNameInput.value = storedRoomName;
-        }
-        if (roomPassInput) {
-            roomPassInput.value = storedRoomPass;
-        }
-        if (roomDeadlineInput) {
-            roomDeadlineInput.value = storedRoomDeadline;
-        }
-        if (roomSavedMessage) {
-            if (storedRoomName && storedRoomDeadline) {
-                roomSavedMessage.textContent = `Room settings are saved. Join before ${formatDeadline(storedRoomDeadline)}.`;
-            } else if (storedRoomName) {
-                roomSavedMessage.textContent = 'Room settings are saved. No join deadline set.';
-            } else {
-                roomSavedMessage.textContent = 'No room configured yet.';
+            if (roomNameInput) {
+                roomNameInput.value = storedRoomName;
+            }
+            if (roomPassInput) {
+                roomPassInput.value = storedRoomPass;
+            }
+            if (roomDeadlineInput) {
+                roomDeadlineInput.value = storedRoomDeadline;
+            }
+            if (roomDescInput) {
+                roomDescInput.value = storedDescription;
+            }
+            if (roomSavedMessage) {
+                if (storedRoomName && storedRoomDeadline) {
+                    roomSavedMessage.textContent = `Room settings are saved. Join before ${formatDeadline(storedRoomDeadline)}. Room ID & password auto-reveal to joined players 5 minutes before that time.`;
+                } else if (storedRoomName) {
+                    roomSavedMessage.textContent = 'Room settings are saved. No join deadline set — room ID & password show as soon as a player joins.';
+                } else {
+                    roomSavedMessage.textContent = 'No room configured yet.';
+                }
+            }
+            if (saveRoomButton) {
+                saveRoomButton.addEventListener('click', () => {
+                    const name = roomNameInput?.value.trim() || '';
+                    const pass = roomPassInput?.value.trim() || '';
+                    const deadline = roomDeadlineInput?.value || '';
+                    const description = roomDescInput?.value.trim() || '';
+                    if (!name || !pass) {
+                        roomSavedMessage.textContent = 'Room name and password are required.';
+                        return;
+                    }
+                    if (deadline && !/^\d{2}:\d{2}$/.test(deadline)) {
+                        roomSavedMessage.textContent = 'Please enter a valid join time.';
+                        return;
+                    }
+                    localStorage.setItem(`${matchId}-room-name`, name);
+                    localStorage.setItem(`${matchId}-room-password`, pass);
+                    if (deadline) {
+                        localStorage.setItem(`${matchId}-room-deadline`, deadline);
+                    } else {
+                        localStorage.removeItem(`${matchId}-room-deadline`);
+                    }
+                    if (description) {
+                        localStorage.setItem(`${matchId}-description`, description);
+                    } else {
+                        localStorage.removeItem(`${matchId}-description`);
+                    }
+                    roomSavedMessage.textContent = deadline
+                        ? `Room settings saved. Join before ${formatDeadline(deadline)}. Room ID & password auto-reveal to joined players 5 minutes before that time.`
+                        : 'Room settings saved. No join deadline set — room ID & password show as soon as a player joins.';
+                    renderDashboard();
+                });
+            }
+
+            const resetRoomButton = document.getElementById(`${matchId}-reset-room-btn`);
+            if (resetRoomButton) {
+                resetRoomButton.addEventListener('click', () => {
+                    localStorage.removeItem(`${matchId}-room-name`);
+                    localStorage.removeItem(`${matchId}-room-password`);
+                    localStorage.removeItem(`${matchId}-room-deadline`);
+                    localStorage.removeItem(`${matchId}-description`);
+                    const usersToReset = loadUsers();
+                    usersToReset.forEach((user) => {
+                        const state = getMatchState(user, matchId);
+                        if (state.participated) {
+                            user.matchesPlayed = (Number(user.matchesPlayed) || 0) + 1;
+                        }
+                        setMatchState(user, matchId, { participated: false, roomName: '', roomPassword: '' });
+                    });
+                    saveUsers(usersToReset);
+                    if (roomNameInput) {
+                        roomNameInput.value = '';
+                    }
+                    if (roomPassInput) {
+                        roomPassInput.value = '';
+                    }
+                    if (roomDeadlineInput) {
+                        roomDeadlineInput.value = '';
+                    }
+                    if (roomDescInput) {
+                        roomDescInput.value = '';
+                    }
+                    if (roomSavedMessage) {
+                        roomSavedMessage.textContent = `${label} room settings and all participations have been reset.`;
+                    }
+                    renderDashboard();
+                });
             }
         }
-        if (saveRoomButton) {
-            saveRoomButton.addEventListener('click', () => {
-                const name = roomNameInput?.value.trim() || '';
-                const pass = roomPassInput?.value.trim() || '';
-                const deadline = roomDeadlineInput?.value || '';
-                if (!name || !pass) {
-                    roomSavedMessage.textContent = 'Room name and password are required.';
-                    return;
-                }
-                if (deadline && !/^\d{2}:\d{2}$/.test(deadline)) {
-                    roomSavedMessage.textContent = 'Please enter a valid join time.';
-                    return;
-                }
-                localStorage.setItem('lonewolf-room-name', name);
-                localStorage.setItem('lonewolf-room-password', pass);
-                if (deadline) {
-                    localStorage.setItem('lonewolf-room-deadline', deadline);
-                } else {
-                    localStorage.removeItem('lonewolf-room-deadline');
-                }
-                roomSavedMessage.textContent = deadline
-                    ? `Room settings saved. Join before ${formatDeadline(deadline)}.`
-                    : 'Room settings saved. No join deadline set.';
-                renderDashboard();
-            });
-        }
 
-        const resetRoomButton = document.getElementById('reset-room-btn');
-        if (resetRoomButton) {
-            resetRoomButton.addEventListener('click', () => {
-                localStorage.removeItem('lonewolf-room-name');
-                localStorage.removeItem('lonewolf-room-password');
-                localStorage.removeItem('lonewolf-room-deadline');
-                const usersToReset = loadUsers();
-                usersToReset.forEach((user) => {
-                    if (user.participated) {
-                        user.matchesPlayed = (Number(user.matchesPlayed) || 0) + 1;
-                    }
-                    user.participated = false;
-                    user.roomName = '';
-                    user.roomPassword = '';
-                });
-                saveUsers(usersToReset);
-                if (roomNameInput) {
-                    roomNameInput.value = '';
-                }
-                if (roomPassInput) {
-                    roomPassInput.value = '';
-                }
-                if (roomDeadlineInput) {
-                    roomDeadlineInput.value = '';
-                }
-                if (roomSavedMessage) {
-                    roomSavedMessage.textContent = 'Room settings and all participations have been reset.';
-                }
-                renderDashboard();
-            });
-        }
+        setupRoomConfig('lonewolf', 'Lonewolf 1v1');
+        setupRoomConfig('cs1v1', 'CS 1v1 Custom');
 
         const withdrawalRequestsList = document.getElementById('withdrawal-requests-list');
         if (withdrawalRequestsList) {
@@ -504,19 +576,32 @@ function renderDashboard() {
         userCoins.textContent = user ? String(user.coins ?? 0) : '0';
     }
 
-    if (user && user.participated) {
+    const joinedMatches = user ? MATCHES.filter((m) => getMatchState(user, m.id).participated) : [];
+
+    if (joinedMatches.length > 0) {
         if (roomStatus) {
-            roomStatus.textContent = 'You are participating in Lonewolf 1v1.';
+            roomStatus.textContent = `Participating in: ${joinedMatches.map((m) => m.label).join(', ')}`;
         }
+        const lines = joinedMatches.map((m) => {
+            const state = getMatchState(user, m.id);
+            if (!isMatchRoomRevealed(m.id)) {
+                const deadlineDate = getMatchDeadlineDate(m.id);
+                const revealTimeStr = deadlineDate
+                    ? new Date(deadlineDate.getTime() - 5 * 60 * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                    : null;
+                return `${m.label}: Room details reveal ${revealTimeStr ? `at ${revealTimeStr}` : 'shortly'} (5 min before match).`;
+            }
+            return `${m.label} — Room: ${state.roomName || 'N/A'} | Password: ${state.roomPassword || 'N/A'}`;
+        });
         if (userRoomName) {
-            userRoomName.textContent = `Room Name: ${user.roomName || localStorage.getItem('lonewolf-room-name') || ''}`;
+            userRoomName.innerHTML = lines.map((line) => escapeHtml(line)).join('<br>');
         }
         if (userRoomPassword) {
-            userRoomPassword.textContent = `Room Password: ${user.roomPassword || localStorage.getItem('lonewolf-room-password') || ''}`;
+            userRoomPassword.textContent = '';
         }
     } else {
         if (roomStatus) {
-            roomStatus.textContent = 'Visit the Tournament page to join Lonewolf 1v1.';
+            roomStatus.textContent = 'Visit the Tournament page to join a match.';
         }
         if (userRoomName) {
             userRoomName.textContent = '';
@@ -729,7 +814,7 @@ function setupWithdrawModal() {
                     errorEl.classList.remove('hidden');
                     return;
                 }
-                if (latestUser.participated) {
+                if (MATCHES.some((m) => getMatchState(latestUser, m.id).participated)) {
                     errorEl.textContent = "You can't withdraw while you're participating in a match.";
                     errorEl.classList.remove('hidden');
                     return;
