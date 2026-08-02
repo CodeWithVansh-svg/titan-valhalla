@@ -1,8 +1,8 @@
 const STORAGE_KEY = 'login-users-db';
 const CURRENT_USER_KEY = 'logged-in-user';
 const ADMINS = [
-    { email: 'dudhevansh8@gmail.com', username: 'vansh_dada', phone: '8989921991' },
-    { email: 'samarthkhamele@gmail.com', username: 'Samarth', phone: '' }
+    { email: 'dudhevansh8@gmail.com', username: 'Thevansh', phone: '8989921991', ffUid: '9571892213' },
+    { email: 'samarthkhamele@gmail.com', username: 'Samarth', phone: '', ffUid: '1861297996' }
 ];
 
 function findAdminByEmail(email) {
