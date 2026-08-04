@@ -1,3 +1,4 @@
+import { loadProfile } from "./js/auth.js";
 const STORAGE_KEY = 'login-users-db';
 const CURRENT_USER_KEY = 'logged-in-user';
 const ADMINS = [
@@ -1056,4 +1057,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const profile = await loadProfile();
+
+document.getElementById("username").textContent = profile.username;
+document.getElementById("wallet").textContent = profile.wallet_balance;
 });
