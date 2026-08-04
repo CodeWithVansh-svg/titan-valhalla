@@ -1,3 +1,4 @@
+import { supabase } from "./js/supabase.js";
 const STORAGE_KEY = 'login-users-db';
 const CURRENT_USER_KEY = 'logged-in-user';
 const REMEMBER_KEY = 'remembered-login';
