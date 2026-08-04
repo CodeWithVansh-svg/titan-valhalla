@@ -19,41 +19,44 @@ export async function register(
             password,
 
             options: {
-
                 data: {
-
-                    username,
-                    phone,
-                    ff_uid: ffUid
-
+                    username
                 }
-
             }
 
         });
 
-    if (error)
-        throw error;
+    if (error) throw error;
 
-    const user = data.user;
-
-    if (!user)
-        throw new Error("Unable to create account.");
+    if (!data.user)
+        throw new Error("Signup failed.");
 
     const { error: profileError } =
         await supabase
             .from("profiles")
-            .update({
+            .upsert({
 
-                username,
-                phone,
-                ff_uid: ffUid
+                id: data.user.id,
 
-            })
-            .eq("id", user.id);
+                username: username,
+
+                phone: phone,
+
+                ff_uid: ffUid,
+
+                wallet_balance: 0,
+
+                winnings: 0,
+
+                total_matches: 0,
+
+                created_at:
+                    new Date().toISOString()
+
+            });
 
     if (profileError)
-        console.log(profileError);
+        throw profileError;
 
     return data;
 
@@ -261,3 +264,25 @@ supabase.auth.onAuthStateChange(
 
     }
 );
+
+export async function loadProfile() {
+
+    const user =
+        await getCurrentUser();
+
+    if (!user)
+        return null;
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+    if (error)
+        throw error;
+
+    return data;
+
+}
