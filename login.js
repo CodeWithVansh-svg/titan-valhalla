@@ -1,4 +1,9 @@
-import { supabase } from "./js/supabase.js";
+import {
+    login,
+    register,
+    resetPassword
+} from "./js/auth.js";
+
 const STORAGE_KEY = 'login-users-db';
 const CURRENT_USER_KEY = 'logged-in-user';
 const REMEMBER_KEY = 'remembered-login';
@@ -26,50 +31,27 @@ function saveUsers(users) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
 }
 
-function registerUser(username, email, password, phone, ffUid) {
-    const users = loadUsers();
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedUsername = username.trim().toLowerCase();
-    const normalizedPhone = phone.trim();
-    const normalizedFfUid = (ffUid || '').trim();
+async function registerUser(username, email, password, phone, ffUid) {
 
-    const emailExists = users.some((user) => user.email === normalizedEmail);
-    const usernameExists = users.some((user) => user.username.trim().toLowerCase() === normalizedUsername);
-    const phoneExists = users.some((user) => user.phone === normalizedPhone);
-    const ffUidExists = users.some((user) => user.ffUid === normalizedFfUid);
-    const clashesWithAdmin = ADMINS.some((admin) => admin.email.toLowerCase() === normalizedEmail || admin.username.toLowerCase() === normalizedUsername);
+    try {
 
-    if (!normalizedPhone) {
-        return { success: false, message: 'Phone number is required.' };
+        await register(email, password, username);
+
+        return {
+            success: true,
+            message: "Account created! Please verify your email."
+        };
+
+    } catch (error) {
+
+        return {
+            success: false,
+            message: error.message
+        };
+
     }
 
-    if (!/^[0-9]{6,12}$/.test(normalizedFfUid)) {
-        return { success: false, message: 'Enter a valid Free Fire UID (6-12 digits).' };
-    }
-
-    if (clashesWithAdmin) {
-        return { success: false, message: 'That email or username is reserved and cannot be used.' };
-    }
-
-    if (emailExists && usernameExists) {
-        return { success: false, message: 'That email and username are already registered.' };
-    }
-
-    if (emailExists) {
-        return { success: false, message: 'An account with that email already exists.' };
-    }
-
-    if (usernameExists) {
-        return { success: false, message: 'That Free Fire IGN is already registered.' };
-    }
-
-    if (phoneExists) {
-        return { success: false, message: 'That phone number is already registered.' };
-    }
-
-    if (ffUidExists) {
-        return { success: false, message: 'That Free Fire UID is already linked to another account.' };
-    }
+}
 
     users.push({
         id: Date.now(),
@@ -102,21 +84,38 @@ function registerUser(username, email, password, phone, ffUid) {
     return { success: true, message: 'Account created successfully. You can now log in.' };
 }
 
-function loginUser(email, password) {
-    const users = loadUsers();
-    const normalizedEmail = email.trim().toLowerCase();
+async function loginUser(email, password) {
 
-    const admin = findAdminByEmail(normalizedEmail);
-    if (admin && password === admin.password) {
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
-            username: admin.username,
-            email: admin.email,
-            phone: admin.phone || '',
-            ffUid: admin.ffUid || ''
-        }));
+    try {
 
-        return { success: true, message: `Welcome back, ${admin.username}!` };
+        const data = await login(email, password);
+
+        const user = data.user;
+
+        localStorage.setItem(
+            CURRENT_USER_KEY,
+            JSON.stringify({
+                email: user.email
+            })
+        );
+
+        return {
+            success: true,
+            message: "Login Successful!"
+        };
+
     }
+
+    catch (error) {
+
+        return {
+            success: false,
+            message: error.message
+        };
+
+    }
+
+}
 
     if (admin) {
         return { success: false, message: 'Invalid email or password.' };
