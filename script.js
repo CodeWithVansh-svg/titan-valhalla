@@ -1115,7 +1115,23 @@ document.addEventListener('DOMContentLoaded', () => {
             clearUrlState();
             window.location.href = 'login.html';
         });
+
+        await loadCurrentProfile();
+
+        const logoutBtn =
+    document.getElementById("logout-btn");
+
+if (logoutBtn) {
+
+    logoutBtn.addEventListener("click", async () => {
+
+        await logout();
+
+    });
+
+}
     }
+    
 
     const profile = await loadProfile();
 
