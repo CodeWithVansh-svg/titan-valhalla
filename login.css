@@ -188,3 +188,20 @@ a.forgot-password-link:hover::after,
 a.register-link:hover::after {
     width: 100%;
 }
+
+.message{
+    margin-top:15px;
+    padding:10px;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.success{
+    background:#d4edda;
+    color:#155724;
+}
+
+.error{
+    background:#f8d7da;
+    color:#721c24;
+}
