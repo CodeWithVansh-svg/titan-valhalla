@@ -1042,6 +1042,59 @@ function setupPlayerStatsModal() {
     });
 }
 
+async function loadCurrentProfile() {
+
+    try {
+
+        const profile = await loadProfile();
+
+        if (!profile) {
+
+            window.location.href = "login.html";
+            return null;
+
+        }
+
+        const username =
+            document.getElementById("username");
+
+        if (username)
+            username.textContent =
+                profile.username ?? "-";
+
+        const wallet =
+            document.getElementById("wallet");
+
+        if (wallet)
+            wallet.textContent =
+                profile.wallet_balance ?? 0;
+
+        const phone =
+            document.getElementById("phone");
+
+        if (phone)
+            phone.textContent =
+                profile.phone ?? "-";
+
+        const ffuid =
+            document.getElementById("ffuid");
+
+        if (ffuid)
+            ffuid.textContent =
+                profile.ff_uid ?? "-";
+
+        return profile;
+
+    } catch (err) {
+
+        console.error(err);
+
+        return null;
+
+    }
+
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     renderDashboard();
     setupRechargeModal();
