@@ -172,5 +172,10 @@
 
     <script src="script.js"></script>
     <script type="module" src="./js/supabase.js"></script>
+    <script type="module">
+import { requireAuth } from "./js/auth.js";
+
+await requireAuth();
+</script>
 </body>
 </html>
