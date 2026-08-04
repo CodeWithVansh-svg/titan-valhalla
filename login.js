@@ -1,279 +1,376 @@
 import {
     login,
     register,
-    resetPassword
+    sendResetEmail,
+    requireAuth
 } from "./js/auth.js";
 
-const STORAGE_KEY = 'login-users-db';
-const CURRENT_USER_KEY = 'logged-in-user';
-const REMEMBER_KEY = 'remembered-login';
-const ADMINS = [
-    { email: 'dudhevansh8@gmail.com', password: '2345678910$$', username: 'Thevansh', phone: '8989921991', ffUid: '9571892213' },
-    { email: 'samarthkhamele@gmail.com', password: 'samarth333', username: 'Samarth', phone: '', ffUid: '1861297996' }
-];
+const CURRENT_USER_KEY = "logged-in-user";
+const REMEMBER_KEY = "remembered-login";
 
-function findAdminByEmail(email) {
-    const normalizedEmail = (email || '').trim().toLowerCase();
-    return ADMINS.find((admin) => admin.email.toLowerCase() === normalizedEmail) || null;
+/* ==========================
+   MESSAGE
+========================== */
+
+function showMessage(element, message, type = "info") {
+
+    if (!element) return;
+
+    element.textContent = message;
+    element.className = `message ${type}`;
+
 }
 
-function loadUsers() {
+/* ==========================
+   REMEMBER ME
+========================== */
+
+function saveRememberedLogin(email) {
+
+    localStorage.setItem(
+        REMEMBER_KEY,
+        JSON.stringify({ email })
+    );
+
+}
+
+function loadRememberedLogin() {
+
     try {
-        const savedUsers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        return Array.isArray(savedUsers) ? savedUsers : [];
-    } catch (error) {
-        console.warn('Unable to load users:', error);
-        return [];
-    }
-}
 
-function saveUsers(users) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
+        return JSON.parse(
+            localStorage.getItem(REMEMBER_KEY)
+        );
 
-async function registerUser(username, email, password, phone, ffUid) {
+    } catch {
 
-    try {
-
-        await register(email, password, username);
-
-        return {
-            success: true,
-            message: "Account created! Please verify your email."
-        };
-
-    } catch (error) {
-
-        return {
-            success: false,
-            message: error.message
-        };
+        return null;
 
     }
 
 }
 
-    users.push({
-        id: Date.now(),
-        username: username.trim(),
-        email: normalizedEmail,
-        phone: normalizedPhone,
-        ffUid: normalizedFfUid,
-        password,
-        coins: 0,
-        winCoins: 0,
-        totalEarnings: 0,
-        matchesPlayed: 0,
-        upiId: '',
-        participated: false,
-        roomName: '',
-        roomPassword: '',
-        matches: {
-            lonewolf: { participated: false, roomName: '', roomPassword: '' },
-            cs1v1: { participated: false, roomName: '', roomPassword: '' }
-        }
-    });
+function clearRememberedLogin() {
 
-    saveUsers(users);
+    localStorage.removeItem(
+        REMEMBER_KEY
+    );
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
-        username: username.trim(),
-        email: normalizedEmail
-    }));
-
-    return { success: true, message: 'Account created successfully. You can now log in.' };
 }
 
-async function loginUser(email, password) {
+function prefillRememberedLogin() {
+
+    const form =
+        document.getElementById("login-form");
+
+    if (!form) return;
+
+    const remembered =
+        loadRememberedLogin();
+
+    if (!remembered) return;
+
+    form.email.value =
+        remembered.email || "";
+
+    const remember =
+        document.getElementById("remember-me");
+
+    if (remember)
+        remember.checked = true;
+
+}
+
+/* ==========================
+   LOGIN
+========================== */
+
+async function handleLogin(form, messageBox) {
+
+    const email =
+        form.email.value.trim();
+
+    const password =
+        form.password.value;
+
+    const remember =
+        document.getElementById("remember-me")
+        ?.checked;
 
     try {
 
-        const data = await login(email, password);
-
-        const user = data.user;
+        const data =
+            await login(email, password);
 
         localStorage.setItem(
             CURRENT_USER_KEY,
             JSON.stringify({
-                email: user.email
+
+                id: data.user.id,
+                email: data.user.email
+
             })
         );
 
-        return {
-            success: true,
-            message: "Login Successful!"
-        };
+        if (remember)
+            saveRememberedLogin(email);
+
+        else
+            clearRememberedLogin();
+
+        showMessage(
+            messageBox,
+            "Login Successful!",
+            "success"
+        );
+
+        setTimeout(() => {
+
+            window.location.href =
+                "index.html";
+
+        }, 700);
 
     }
 
     catch (error) {
 
-        return {
-            success: false,
-            message: error.message
-        };
+        showMessage(
+
+            messageBox,
+
+            error.message,
+
+            "error"
+
+        );
 
     }
 
 }
 
-    if (admin) {
-        return { success: false, message: 'Invalid email or password.' };
-    }
+/* ==========================
+   REGISTER
+========================== */
 
-    const user = users.find((entry) => entry.email === normalizedEmail && entry.password === password);
+async function handleRegister(
+    form,
+    messageBox
+) {
 
-    if (!user) {
-        return { success: false, message: 'Invalid email or password.' };
-    }
+    const username =
+        form.username.value.trim();
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
-        username: user.username,
-        email: user.email
-    }));
+    const email =
+        form.email.value.trim();
 
-    return { success: true, message: `Welcome back, ${user.username}!` };
-}
+    const phone =
+        form.phone.value.trim();
 
-function resetPassword(email, newPassword, confirmPassword) {
-    const users = loadUsers();
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = users.find((entry) => entry.email === normalizedEmail);
+    const ffUid =
+        form.ffUid.value.trim();
 
-    if (!user) {
-        return { success: false, message: 'No account found with that email.' };
-    }
+    const password =
+        form.password.value;
 
-    if (newPassword.length < 4) {
-        return { success: false, message: 'Password must be at least 4 characters long.' };
-    }
-
-    if (newPassword !== confirmPassword) {
-        return { success: false, message: 'Passwords do not match.' };
-    }
-
-    user.password = newPassword;
-    saveUsers(users);
-
-    return { success: true, message: 'Password updated successfully. You can now log in.' };
-}
-
-function saveRememberedLogin(email, password) {
     try {
-        localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, password }));
-    } catch (error) {
-        console.warn('Unable to save remembered login:', error);
+
+        await register(
+
+            email,
+            password,
+            username,
+            phone,
+            ffUid
+
+        );
+
+        showMessage(
+
+            messageBox,
+
+            "Account created successfully. Please verify your email.",
+
+            "success"
+
+        );
+
+        form.reset();
+
     }
-}
 
-function clearRememberedLogin() {
-    localStorage.removeItem(REMEMBER_KEY);
-}
+    catch (error) {
 
-function loadRememberedLogin() {
+        showMessage(
+
+            messageBox,
+
+            error.message,
+
+            "error"
+
+        );
+
+    }
+
+}
+/* ==========================
+   FORGOT PASSWORD
+========================== */
+
+async function handleForgotPassword(form, messageBox) {
+
+    const email = form.email.value.trim();
+
     try {
-        return JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null');
+
+        await sendResetEmail(email);
+
+        showMessage(
+            messageBox,
+            "Password reset email sent successfully.",
+            "success"
+        );
+
+        form.reset();
+
     } catch (error) {
-        console.warn('Unable to load remembered login:', error);
-        return null;
-    }
-}
 
-function prefillRememberedLogin() {
-    const loginForm = document.getElementById('login-form');
-    if (!loginForm) {
-        return;
-    }
-    const remembered = loadRememberedLogin();
-    if (!remembered) {
-        return;
-    }
-    if (loginForm.email) {
-        loginForm.email.value = remembered.email || '';
-    }
-    if (loginForm.password) {
-        loginForm.password.value = remembered.password || '';
-    }
-    const rememberCheckbox = document.getElementById('remember-me');
-    if (rememberCheckbox) {
-        rememberCheckbox.checked = true;
-    }
-}
+        showMessage(
+            messageBox,
+            error.message,
+            "error"
+        );
 
-function showMessage(messageElement, message, type = 'info') {
-    if (!messageElement) {
-        return;
     }
 
-    messageElement.textContent = message;
-    messageElement.className = `message ${type}`;
 }
+
+/* ==========================
+   FORM HANDLERS
+========================== */
 
 function attachFormHandlers() {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const forgotPasswordForm = document.getElementById('forgot-password-form');
-    const messageBox = document.getElementById('message');
+
+    const loginForm =
+        document.getElementById("login-form");
+
+    const registerForm =
+        document.getElementById("register-form");
+
+    const forgotPasswordForm =
+        document.getElementById("forgot-password-form");
+
+    const messageBox =
+        document.getElementById("message");
 
     if (loginForm) {
-        loginForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const email = loginForm.email.value;
-            const password = loginForm.password.value;
-            const rememberMe = document.getElementById('remember-me')?.checked || false;
-            const result = loginUser(email, password);
-            showMessage(messageBox, result.message, result.success ? 'success' : 'error');
 
-            if (result.success) {
-                if (rememberMe) {
-                    saveRememberedLogin(email.trim(), password);
-                } else {
-                    clearRememberedLogin();
-                }
+        loginForm.addEventListener(
+            "submit",
+            async (event) => {
 
-                loginForm.reset();
-                const normalizedEmail = email.trim().toLowerCase();
-                window.location.href = `index.html?user=${encodeURIComponent(normalizedEmail)}`;
+                event.preventDefault();
+
+                await handleLogin(
+                    loginForm,
+                    messageBox
+                );
+
             }
-        });
+        );
+
     }
 
     if (registerForm) {
-        registerForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const username = registerForm.username.value;
-            const email = registerForm.email.value;
-            const phone = registerForm.phone.value;
-            const password = registerForm.password.value;
-            const ffUid = registerForm.ffUid.value;
-            const result = registerUser(username, email, password, phone, ffUid);
-            showMessage(messageBox, result.message, result.success ? 'success' : 'error');
 
-            if (result.success) {
-                registerForm.reset();
-                const normalizedEmail = email.trim().toLowerCase();
-                window.location.href = `index.html?user=${encodeURIComponent(normalizedEmail)}`;
+        registerForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+                await handleRegister(
+                    registerForm,
+                    messageBox
+                );
+
             }
-        });
+        );
+
     }
 
     if (forgotPasswordForm) {
-        forgotPasswordForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const email = forgotPasswordForm.email.value;
-            const newPassword = forgotPasswordForm.newPassword.value;
-            const confirmPassword = forgotPasswordForm.confirmPassword.value;
-            const result = resetPassword(email, newPassword, confirmPassword);
-            showMessage(messageBox, result.message, result.success ? 'success' : 'error');
 
-            if (result.success) {
-                forgotPasswordForm.reset();
+        forgotPasswordForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+                await handleForgotPassword(
+                    forgotPasswordForm,
+                    messageBox
+                );
+
             }
-        });
+        );
+
     }
+
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    attachFormHandlers();
-    prefillRememberedLogin();
-});
+/* ==========================
+   SESSION CHECK
+========================== */
+
+async function checkSession() {
+
+    try {
+
+        const loggedIn =
+            await requireAuth();
+
+        if (
+            loggedIn &&
+            window.location.pathname
+                .includes("login.html")
+        ) {
+
+            window.location.href =
+                "index.html";
+
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+/* ==========================
+   START
+========================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        prefillRememberedLogin();
+
+        attachFormHandlers();
+
+        if (
+            !window.location.pathname.includes(
+                "forgot-password.html"
+            )
+        ) {
+
+            checkSession();
+
+        }
+
+    }
+);
