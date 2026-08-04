@@ -1,5 +1,11 @@
-import { loadProfile, logout } from "./js/auth.js";
-import { supabase } from "./js/supabase.js";
+import {
+    loadProfile,
+    logout
+} from "./js/auth.js";
+
+import {
+    supabase
+} from "./js/supabase.js";
 const STORAGE_KEY = 'login-users-db';
 const CURRENT_USER_KEY = 'logged-in-user';
 const ADMINS = [
