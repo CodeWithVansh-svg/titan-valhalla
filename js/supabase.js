@@ -1,7 +1,20 @@
-const SUPABASE_URL = "https://zodcxxowdneqqbdiqwic.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_PUBLISHABLE_KEY";
+// js/supabase.js
 
-const supabase = window.supabase.createClient(
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const SUPABASE_URL = "https://zodcxxowdneqqbdiqwic.supabase.co";
+
+const SUPABASE_ANON_KEY = "sb_publishable_bnlfWGCM0Kz-zOwLJdRU0w_tAswB4jc";
+
+export const supabase = createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_ANON_KEY,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: "pkce"
+        }
+    }
 );
