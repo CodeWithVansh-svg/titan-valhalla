@@ -354,23 +354,13 @@ async function checkSession() {
    START
 ========================== */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-        prefillRememberedLogin();
+    prefillRememberedLogin();
 
-        attachFormHandlers();
+    attachFormHandlers();
 
-        if (
-            !window.location.pathname.includes(
-                "forgot-password.html"
-            )
-        ) {
+    // Login page par auth check mat karo.
+    // Sirf protected pages par requireAuth() use karo.
 
-            checkSession();
-
-        }
-
-    }
-);
+});
