@@ -1118,62 +1118,69 @@ if (profile.role === "admin") {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
+    await loadCurrentProfile();
+
     renderDashboard();
     setupRechargeModal();
     setupWithdrawModal();
     setupWalletHistoryModal();
     setupPlayerStatsModal();
 
-    const tournamentButton = document.getElementById('tournament-button');
-    const logoutButton = document.getElementById('logout-button');
+    const tournamentButton = document.getElementById("tournament-button");
+
     if (tournamentButton) {
-        tournamentButton.addEventListener('click', () => {
-            window.location.href = 'tournament.html';
+
+        tournamentButton.addEventListener("click", () => {
+
+            window.location.href = "tournament.html";
+
         });
+
     }
+
+    const logoutButton =
+        document.getElementById("logout-button");
+
     if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
+
+        logoutButton.addEventListener("click", async () => {
+
+            await logout();
+
             localStorage.removeItem(CURRENT_USER_KEY);
+
             clearUrlState();
-            window.location.href = 'login.html';
+
+            window.location.href = "login.html";
+
         });
 
-        await loadCurrentProfile();
-
-        const logoutBtn =
-    document.getElementById("logout-btn");
-
-if (logoutBtn) {
-
-    logoutBtn.addEventListener("click", async () => {
-
-        await logout();
-
-    });
-
-}
     }
 
     const profile = await loadProfile();
 
-const adminPanel = document.getElementById("admin-panel");
-const userPanel = document.getElementById("user-panel");
+    const adminPanel =
+        document.getElementById("admin-panel");
 
-if (profile.role === "admin") {
+    const userPanel =
+        document.getElementById("user-panel");
 
-    adminPanel.classList.remove("hidden");
-    userPanel.classList.add("hidden");
+    if (adminPanel && userPanel) {
 
-} else {
+        if (profile.role === "admin") {
 
-    userPanel.classList.remove("hidden");
-    adminPanel.classList.add("hidden");
+            adminPanel.classList.remove("hidden");
+            userPanel.classList.add("hidden");
 
-}
+        } else {
 
-    const profile = await loadProfile();
+            userPanel.classList.remove("hidden");
+            adminPanel.classList.add("hidden");
 
-document.getElementById("username").textContent = profile.username;
-document.getElementById("wallet").textContent = profile.wallet_balance;
+        }
+
+    }
+
 });
