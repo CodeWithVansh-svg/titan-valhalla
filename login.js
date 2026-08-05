@@ -219,3 +219,142 @@ async function handleRegister(
     }
 
 }
+
+// part 3
+
+async function handleForgotPassword(
+    form,
+    messageBox
+) {
+
+    const email =
+        form.email.value.trim();
+
+    try {
+
+        await sendResetEmail(email);
+
+        showMessage(
+
+            messageBox,
+
+            "Password reset email sent successfully.",
+
+            "success"
+
+        );
+
+        form.reset();
+
+    }
+
+    catch (error) {
+
+        showMessage(
+
+            messageBox,
+
+            error.message,
+
+            "error"
+
+        );
+
+    }
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        prefillRememberedLogin();
+
+        const messageBox =
+            document.getElementById(
+                "message"
+            );
+
+        const loginForm =
+            document.getElementById(
+                "login-form"
+            );
+
+        const registerForm =
+            document.getElementById(
+                "register-form"
+            );
+
+        const forgotForm =
+            document.getElementById(
+                "forgot-password-form"
+            );
+
+        if (loginForm) {
+
+            loginForm.addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+                    await handleLogin(
+
+                        loginForm,
+
+                        messageBox
+
+                    );
+
+                }
+
+            );
+
+        }
+
+        if (registerForm) {
+
+            registerForm.addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+                    await handleRegister(
+
+                        registerForm,
+
+                        messageBox
+
+                    );
+
+                }
+
+            );
+
+        }
+
+        if (forgotForm) {
+
+            forgotForm.addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+                    await handleForgotPassword(
+
+                        forgotForm,
+
+                        messageBox
+
+                    );
+
+                }
+
+            );
+
+        }
+
+    }
+);
