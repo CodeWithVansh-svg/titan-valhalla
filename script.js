@@ -1154,7 +1154,23 @@ if (logoutBtn) {
 
 }
     }
-    
+
+    const profile = await loadProfile();
+
+const adminPanel = document.getElementById("admin-panel");
+const userPanel = document.getElementById("user-panel");
+
+if (profile.role === "admin") {
+
+    adminPanel.classList.remove("hidden");
+    userPanel.classList.add("hidden");
+
+} else {
+
+    userPanel.classList.remove("hidden");
+    adminPanel.classList.add("hidden");
+
+}
 
     const profile = await loadProfile();
 
