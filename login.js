@@ -80,3 +80,142 @@ function prefillRememberedLogin() {
         remember.checked = true;
 
 }
+
+// part 2
+
+async function handleLogin(form, messageBox) {
+
+    const email =
+        form.email.value.trim();
+
+    const password =
+        form.password.value;
+
+    const remember =
+        document.getElementById(
+            "remember-me"
+        )?.checked;
+
+    try {
+
+        const data =
+            await login(
+                email,
+                password
+            );
+
+        if (remember) {
+
+            saveRememberedLogin(
+                email
+            );
+
+        }
+
+        else {
+
+            clearRememberedLogin();
+
+        }
+
+        showMessage(
+
+            messageBox,
+
+            "Login Successful!",
+
+            "success"
+
+        );
+
+        setTimeout(() => {
+
+            window.location.href =
+                "index.html";
+
+        }, 700);
+
+    }
+
+    catch (error) {
+
+        showMessage(
+
+            messageBox,
+
+            error.message,
+
+            "error"
+
+        );
+
+    }
+
+}
+
+async function handleRegister(
+    form,
+    messageBox
+) {
+
+    const username =
+        form.username.value.trim();
+
+    const email =
+        form.email.value.trim();
+
+    const password =
+        form.password.value;
+
+    const phone =
+        form.phone?.value.trim() || "";
+
+    const ffUid =
+        form.ffUid?.value.trim() || "";
+
+    try {
+
+        await register({
+
+            username,
+            email,
+            password,
+            phone,
+            ffUid
+
+        });
+
+        showMessage(
+
+            messageBox,
+
+            "Account created successfully!",
+
+            "success"
+
+        );
+
+        setTimeout(() => {
+
+            window.location.href =
+                "login.html";
+
+        }, 1000);
+
+    }
+
+    catch (error) {
+
+        showMessage(
+
+            messageBox,
+
+            error.message,
+
+            "error"
+
+        );
+
+    }
+
+}
