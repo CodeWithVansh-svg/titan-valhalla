@@ -124,16 +124,13 @@ async function handleLogin(form, messageBox) {
             "success"
         );
 
-        setTimeout(() => {
-
-            const profile = await loadProfile();
+        const profile = await loadProfile();
 
 if (profile.role === "admin") {
-    window.location.href = "admin.html";
+    window.location.href = "index.html";
 } else {
     window.location.href = "index.html";
 }
-
         }, 700);
 
     }
