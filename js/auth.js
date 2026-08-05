@@ -135,18 +135,16 @@ export async function getSession() {
 
 export async function requireAuth() {
 
-    const { data, error } = await supabase.auth.getSession();
+    const { data } = await supabase.auth.getSession();
 
     console.log("SESSION:", data.session);
 
     if (!data.session) {
-
-        window.location.href = "login.html";
         return false;
-
     }
 
     return true;
+
 }
 
 /* ============================
