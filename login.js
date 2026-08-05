@@ -87,36 +87,27 @@ function prefillRememberedLogin() {
 
 async function handleLogin(form, messageBox) {
 
-    const email =
-        form.email.value.trim();
-
-    const password =
-        form.password.value;
-
-    const remember =
-        document.getElementById("remember-me")
-        ?.checked;
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    const remember = document.getElementById("remember-me")?.checked;
 
     try {
 
-        const data =
-            await login(email, password);
+        const data = await login(email, password);
 
         localStorage.setItem(
             CURRENT_USER_KEY,
             JSON.stringify({
-
                 id: data.user.id,
                 email: data.user.email
-
             })
         );
 
-        if (remember)
+        if (remember) {
             saveRememberedLogin(email);
-
-        else
+        } else {
             clearRememberedLogin();
+        }
 
         showMessage(
             messageBox,
@@ -124,27 +115,14 @@ async function handleLogin(form, messageBox) {
             "success"
         );
 
-        const profile = await loadProfile();
+        window.location.href = "index.html";
 
-if (profile.role === "admin") {
-    window.location.href = "index.html";
-} else {
-    window.location.href = "index.html";
-}
-        }, 700);
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
         showMessage(
-
             messageBox,
-
             error.message,
-
             "error"
-
         );
 
     }
