@@ -2,7 +2,8 @@ import {
     login,
     register,
     sendResetEmail,
-    loadProfile
+    loadProfile,
+    requireAuth
 } from "./js/auth.js";
 
 const CURRENT_USER_KEY = "logged-in-user";
