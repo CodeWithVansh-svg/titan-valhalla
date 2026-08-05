@@ -1055,6 +1055,29 @@ async function loadCurrentProfile() {
 
         }
 
+        const profile = await loadProfile();
+
+const adminPanel = document.getElementById("admin-panel");
+const userPanel = document.getElementById("user-panel");
+
+if (profile.role === "admin") {
+
+    if (adminPanel)
+        adminPanel.style.display = "block";
+
+    if (userPanel)
+        userPanel.style.display = "none";
+
+} else {
+
+    if (adminPanel)
+        adminPanel.style.display = "none";
+
+    if (userPanel)
+        userPanel.style.display = "block";
+
+}
+
         const username =
             document.getElementById("username");
 
