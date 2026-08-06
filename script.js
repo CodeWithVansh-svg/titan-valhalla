@@ -864,3 +864,271 @@ async function loadPendingWithdraws() {
 await supabase.rpc("approve_recharge", {
     request_id: rechargeId
 });
+
+/* ==========================================================
+            RENDER PENDING RECHARGES
+========================================================== */
+
+function renderPendingRecharges() {
+
+    const container =
+        document.getElementById(
+            "pending-recharges"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (
+        pendingRecharges.length === 0
+    ) {
+
+        container.innerHTML =
+            "<p>No Pending Recharge Requests</p>";
+
+        return;
+
+    }
+
+    pendingRecharges.forEach(request => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "admin-request-card";
+
+        card.innerHTML = `
+
+            <h3>₹${request.amount}</h3>
+
+            <p>User :
+            ${request.user_id}</p>
+
+            <p>UTR :
+            ${request.utr_number}</p>
+
+            <p>Status :
+            ${request.status}</p>
+
+            <button
+                class="approve-recharge"
+                data-id="${request.id}">
+                Approve
+            </button>
+
+            <button
+                class="reject-recharge"
+                data-id="${request.id}">
+                Reject
+            </button>
+
+        `;
+
+        container.appendChild(card);
+
+    });
+
+    bindRechargeAdminButtons();
+
+}
+
+/* ==========================================================
+            RENDER PENDING WITHDRAWS
+========================================================== */
+
+function renderPendingWithdraws() {
+
+    const container =
+        document.getElementById(
+            "pending-withdraws"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (
+        pendingWithdraws.length === 0
+    ) {
+
+        container.innerHTML =
+            "<p>No Pending Withdraw Requests</p>";
+
+        return;
+
+    }
+
+    pendingWithdraws.forEach(request => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "admin-request-card";
+
+        card.innerHTML = `
+
+            <h3>₹${request.amount}</h3>
+
+            <p>User :
+            ${request.user_id}</p>
+
+            <p>UPI :
+            ${request.upi_id}</p>
+
+            <p>Status :
+            ${request.status}</p>
+
+            <button
+                class="approve-withdraw"
+                data-id="${request.id}">
+                Approve
+            </button>
+
+            <button
+                class="reject-withdraw"
+                data-id="${request.id}">
+                Reject
+            </button>
+
+        `;
+
+        container.appendChild(card);
+
+    });
+
+    bindWithdrawAdminButtons();
+
+}
+
+/* ==========================================================
+                ADMIN BUTTONS
+========================================================== */
+
+function bindRechargeAdminButtons() {
+
+    document
+        .querySelectorAll(
+            ".approve-recharge"
+        )
+        .forEach(button => {
+
+            button.onclick =
+                async function () {
+
+                    const id =
+                        this.dataset.id;
+
+                    await approveRecharge(
+                        id
+                    );
+
+                };
+
+        });
+
+    document
+        .querySelectorAll(
+            ".reject-recharge"
+        )
+        .forEach(button => {
+
+            button.onclick =
+                async function () {
+
+                    const id =
+                        this.dataset.id;
+
+                    await rejectRecharge(
+                        id
+                    );
+
+                };
+
+        });
+
+}
+
+function bindWithdrawAdminButtons() {
+
+    document
+        .querySelectorAll(
+            ".approve-withdraw"
+        )
+        .forEach(button => {
+
+            button.onclick =
+                async function () {
+
+                    const id =
+                        this.dataset.id;
+
+                    await approveWithdraw(
+                        id
+                    );
+
+                };
+
+        });
+
+    document
+        .querySelectorAll(
+            ".reject-withdraw"
+        )
+        .forEach(button => {
+
+            button.onclick =
+                async function () {
+
+                    const id =
+                        this.dataset.id;
+
+                    await rejectWithdraw(
+                        id
+                    );
+
+                };
+
+        });
+
+}
+
+/* ==========================================================
+            RPC PLACEHOLDERS
+========================================================== */
+
+async function approveRecharge(id) {
+
+    showToast(
+        "RPC approveRecharge() pending."
+    );
+
+}
+
+async function rejectRecharge(id) {
+
+    showToast(
+        "RPC rejectRecharge() pending."
+    );
+
+}
+
+async function approveWithdraw(id) {
+
+    showToast(
+        "RPC approveWithdraw() pending."
+    );
+
+}
+
+async function rejectWithdraw(id) {
+
+    showToast(
+        "RPC rejectWithdraw() pending."
+    );
+
+}
