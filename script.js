@@ -714,3 +714,149 @@ async function refreshRequests() {
     await loadWithdrawRequests();
 
 }
+
+/* ==========================================================
+                    ADMIN DASHBOARD
+========================================================== */
+
+let users = [];
+let pendingRecharges = [];
+let pendingWithdraws = [];
+
+/* ==========================================================
+                    LOAD ALL USERS
+========================================================== */
+
+async function loadUsers() {
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("*")
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(
+            "Users Error:",
+            error
+        );
+
+        return;
+
+    }
+
+    users = data || [];
+
+    renderUsers();
+
+}
+
+/* ==========================================================
+                    RENDER USERS
+========================================================== */
+
+function renderUsers() {
+
+    const container =
+        document.getElementById(
+            "admin-users"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    users.forEach(user => {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "admin-user-card";
+
+        div.innerHTML = `
+
+            <h3>${user.username}</h3>
+
+            <p>${user.email}</p>
+
+            <p>Coins :
+            ${user.coins}</p>
+
+            <p>Win Coins :
+            ${user.win_coins}</p>
+
+            <p>Role :
+            ${user.role}</p>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+/* ==========================================================
+            LOAD PENDING RECHARGES
+========================================================== */
+
+async function loadPendingRecharges() {
+
+    const { data, error } =
+        await supabase
+            .from("recharge_requests")
+            .select("*")
+            .eq("status", "pending")
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+    pendingRecharges =
+        data || [];
+
+    renderPendingRecharges();
+
+}
+
+/* ==========================================================
+        LOAD PENDING WITHDRAWS
+========================================================== */
+
+async function loadPendingWithdraws() {
+
+    const { data, error } =
+        await supabase
+            .from("withdraw_requests")
+            .select("*")
+            .eq("status", "pending")
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+    pendingWithdraws =
+        data || [];
+
+    renderPendingWithdraws();
+
+}
