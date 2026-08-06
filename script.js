@@ -176,3 +176,155 @@ function isAdmin() {
     );
 
 }
+
+/* ==========================================================
+                    WALLET
+========================================================== */
+
+async function loadWallet() {
+
+    if (!currentProfile) return;
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("coins, win_coins")
+            .eq("id", currentProfile.id)
+            .single();
+
+    if (error) {
+
+        console.error("Wallet Error:", error);
+
+        return;
+
+    }
+
+    walletBalance =
+        Number(data.coins) || 0;
+
+    winCoins =
+        Number(data.win_coins) || 0;
+
+    updateWalletUI();
+
+}
+
+function updateWalletUI() {
+
+    if (ui.wallet)
+        ui.wallet.textContent =
+            walletBalance;
+
+    if (ui.winWallet)
+        ui.winWallet.textContent =
+            winCoins;
+
+}
+
+/* ==========================================================
+                WALLET TRANSACTIONS
+========================================================== */
+
+async function loadTransactions() {
+
+    if (!currentProfile)
+        return;
+
+    const { data, error } =
+        await supabase
+            .from("wallet_transactions")
+            .select("*")
+            .eq("user_id", currentProfile.id)
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(
+            "Transaction Error:",
+            error
+        );
+
+        return;
+
+    }
+
+    walletTransactions =
+        data || [];
+
+    renderTransactions();
+
+}
+
+function renderTransactions() {
+
+    const container =
+        document.getElementById(
+            "transaction-list"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (
+        walletTransactions.length === 0
+    ) {
+
+        container.innerHTML =
+            "<p>No Transactions Found</p>";
+
+        return;
+
+    }
+
+    walletTransactions.forEach(tx => {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "transaction-item";
+
+        div.innerHTML = `
+
+            <div class="transaction-type">
+                ${tx.transaction_type}
+            </div>
+
+            <div class="transaction-wallet">
+                ${tx.wallet}
+            </div>
+
+            <div class="transaction-amount">
+                ${tx.amount}
+            </div>
+
+            <div class="transaction-date">
+                ${new Date(
+                    tx.created_at
+                ).toLocaleString()}
+            </div>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+/* ==========================================================
+            REFRESH WALLET
+========================================================== */
+
+async function refreshWallet() {
+
+    await loadWallet();
+
+    await loadTransactions();
+
+}
