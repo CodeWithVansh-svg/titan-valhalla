@@ -24,6 +24,10 @@ let tournaments = [];
 let participants = [];
 let walletTransactions = [];
 
+let users = [];
+let pendingRecharges = [];
+let pendingWithdraws = [];
+
 const ui = {};
 
 /* ==========================================================
@@ -170,10 +174,8 @@ function showAdminPanel() {
 
 function isAdmin() {
 
-    return (
-        currentProfile?.role === "admin" ||
-        currentProfile?.role_name === "admin"
-    );
+    // profiles.role is the single source of truth ('user' | 'admin').
+    return currentProfile?.role === "admin";
 
 }
 
@@ -303,6 +305,10 @@ function renderTransactions() {
                 ${tx.amount}
             </div>
 
+            <div class="transaction-note">
+                ${tx.note || ""}
+            </div>
+
             <div class="transaction-date">
                 ${new Date(
                     tx.created_at
@@ -342,6 +348,20 @@ async function submitRecharge(
     if (!currentProfile)
         return false;
 
+    const numericAmount =
+        Number(amount);
+
+    if (!numericAmount || numericAmount < 10) {
+
+        showToast(
+            "Minimum recharge is 10 coins",
+            "error"
+        );
+
+        return false;
+
+    }
+
     const { error } =
         await supabase
             .from("recharge_requests")
@@ -351,7 +371,7 @@ async function submitRecharge(
                     currentProfile.id,
 
                 amount:
-                    Number(amount),
+                    numericAmount,
 
                 utr_number:
                     utrNumber,
@@ -398,13 +418,13 @@ async function submitWithdraw(
     if (!currentProfile)
         return false;
 
-    if (
-        Number(amount) >
-        walletBalance
-    ) {
+    const numericAmount =
+        Number(amount);
+
+    if (!numericAmount || numericAmount < 30) {
 
         showToast(
-            "Insufficient Coins",
+            "Minimum withdrawal is 30 coins",
             "error"
         );
 
@@ -412,24 +432,29 @@ async function submitWithdraw(
 
     }
 
+    // Only WIN coins are withdrawable — not the full wallet balance.
+    if (numericAmount > winCoins) {
+
+        showToast(
+            "You don't have enough win coins for this withdrawal",
+            "error"
+        );
+
+        return false;
+
+    }
+
+    // Deduction, time-window check (2 PM - 9 PM IST), and the
+    // "not currently in a match" rule are all enforced server-side
+    // inside this RPC — never trust the client alone for money.
     const { error } =
-        await supabase
-            .from("withdraw_requests")
-            .insert({
-
-                user_id:
-                    currentProfile.id,
-
-                amount:
-                    Number(amount),
-
-                upi_id:
-                    upiId,
-
-                status:
-                    "pending"
-
-            });
+        await supabase.rpc(
+            "request_withdrawal",
+            {
+                p_amount: numericAmount,
+                p_upi_id: upiId
+            }
+        );
 
     if (error) {
 
@@ -445,9 +470,11 @@ async function submitWithdraw(
     }
 
     showToast(
-        "Withdraw request submitted.",
+        "Withdrawal requested. Coins deducted — it will reach your bank account in 4-5 hours.",
         "success"
     );
+
+    await refreshWallet();
 
     return true;
 
@@ -479,13 +506,22 @@ function bindRechargeButton() {
             const utr =
                 form.utr.value;
 
-            await submitRecharge(
+            const success =
+                await submitRecharge(
 
-                amount,
+                    amount,
 
-                utr
+                    utr
 
-            );
+                );
+
+            if (success) {
+
+                form.reset();
+
+                await loadRechargeRequests();
+
+            }
 
         }
 
@@ -515,13 +551,22 @@ function bindWithdrawButton() {
             const upi =
                 form.upi.value;
 
-            await submitWithdraw(
+            const success =
+                await submitWithdraw(
 
-                amount,
+                    amount,
 
-                upi
+                    upi
 
-            );
+                );
+
+            if (success) {
+
+                form.reset();
+
+                await loadWithdrawRequests();
+
+            }
 
         }
 
@@ -716,14 +761,6 @@ async function refreshRequests() {
 }
 
 /* ==========================================================
-                    ADMIN DASHBOARD
-========================================================== */
-
-let users = [];
-let pendingRecharges = [];
-let pendingWithdraws = [];
-
-/* ==========================================================
                     LOAD ALL USERS
 ========================================================== */
 
@@ -780,15 +817,25 @@ function renderUsers() {
 
         div.innerHTML = `
 
-            <h3>${user.username}</h3>
+            <h3>${user.username}${user.is_banned ? " 🚫" : ""}</h3>
 
             <p>${user.email}</p>
+
+            <p>FF UID :
+            ${user.ff_uid || "Not linked"}</p>
+
+            <p>Phone :
+            ${user.phone || "Not provided"}</p>
 
             <p>Coins :
             ${user.coins}</p>
 
             <p>Win Coins :
             ${user.win_coins}</p>
+
+            <p>Matches :
+            ${user.matches_played} played /
+            ${user.matches_won} won</p>
 
             <p>Role :
             ${user.role}</p>
@@ -860,10 +907,6 @@ async function loadPendingWithdraws() {
     renderPendingWithdraws();
 
 }
-
-await supabase.rpc("approve_recharge", {
-    request_id: rechargeId
-});
 
 /* ==========================================================
             RENDER PENDING RECHARGES
@@ -1098,37 +1141,175 @@ function bindWithdrawAdminButtons() {
 }
 
 /* ==========================================================
-            RPC PLACEHOLDERS
+        RPC CALLS — approve / reject (admin only)
 ========================================================== */
 
 async function approveRecharge(id) {
 
-    showToast(
-        "RPC approveRecharge() pending."
-    );
+    const { error } =
+        await supabase.rpc(
+            "approve_recharge",
+            { p_request_id: id }
+        );
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(error.message, "error");
+
+        return;
+
+    }
+
+    showToast("Recharge approved.", "success");
+
+    await loadPendingRecharges();
+    await loadUsers();
 
 }
 
 async function rejectRecharge(id) {
 
-    showToast(
-        "RPC rejectRecharge() pending."
-    );
+    const reason =
+        window.prompt(
+            "Reason for rejecting this recharge (optional):"
+        ) || null;
+
+    const { error } =
+        await supabase.rpc(
+            "reject_recharge",
+            { p_request_id: id, p_reason: reason }
+        );
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(error.message, "error");
+
+        return;
+
+    }
+
+    showToast("Recharge rejected.", "success");
+
+    await loadPendingRecharges();
 
 }
 
 async function approveWithdraw(id) {
 
-    showToast(
-        "RPC approveWithdraw() pending."
-    );
+    const { error } =
+        await supabase.rpc(
+            "approve_withdraw",
+            { p_request_id: id }
+        );
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(error.message, "error");
+
+        return;
+
+    }
+
+    showToast("Withdrawal marked as paid.", "success");
+
+    await loadPendingWithdraws();
 
 }
 
 async function rejectWithdraw(id) {
 
-    showToast(
-        "RPC rejectWithdraw() pending."
-    );
+    const reason =
+        window.prompt(
+            "Reason for rejecting this withdrawal (optional):"
+        ) || null;
+
+    const { error } =
+        await supabase.rpc(
+            "reject_withdraw",
+            { p_request_id: id, p_reason: reason }
+        );
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(error.message, "error");
+
+        return;
+
+    }
+
+    showToast("Withdrawal rejected and coins refunded.", "success");
+
+    await loadPendingWithdraws();
+    await loadUsers();
 
 }
+
+/* ==========================================================
+                    INIT / BOOTSTRAP
+========================================================== */
+
+async function init() {
+
+    cacheDom();
+
+    const authenticated =
+        await checkAuthentication();
+
+    if (!authenticated)
+        return;
+
+    await loadCurrentProfile();
+
+    if (!currentProfile)
+        return;
+
+    if (ui.logoutButton) {
+
+        ui.logoutButton.addEventListener(
+            "click",
+            async () => {
+
+                await logout();
+
+                window.location.href =
+                    "login.html";
+
+            }
+        );
+
+    }
+
+    bindRechargeButton();
+    bindWithdrawButton();
+
+    if (isAdmin()) {
+
+        showAdminPanel();
+
+        await loadUsers();
+        await loadPendingRecharges();
+        await loadPendingWithdraws();
+
+    } else {
+
+        showUserPanel();
+
+        await refreshWallet();
+        await refreshRequests();
+
+    }
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    init
+);
