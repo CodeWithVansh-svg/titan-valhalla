@@ -860,3 +860,7 @@ async function loadPendingWithdraws() {
     renderPendingWithdraws();
 
 }
+
+await supabase.rpc("approve_recharge", {
+    request_id: rechargeId
+});
