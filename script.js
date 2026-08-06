@@ -164,3 +164,134 @@ function isAdmin() {
     return currentProfile?.role === "admin";
 
 }
+
+/* ==========================================================
+                    WALLET
+========================================================== */
+
+async function loadWallet() {
+
+    if (!currentProfile) return;
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("wallet_balance")
+            .eq("id", currentProfile.id)
+            .single();
+
+    if (error) {
+
+        console.error(error);
+        return;
+
+    }
+
+    walletBalance =
+        data.wallet_balance || 0;
+
+    updateWalletUI();
+
+}
+
+function updateWalletUI() {
+
+    if (!ui.wallet)
+        return;
+
+    ui.wallet.textContent =
+        walletBalance;
+
+}
+
+/* ==========================================================
+                TRANSACTIONS
+========================================================== */
+
+async function loadTransactions() {
+
+    if (!currentProfile)
+        return;
+
+    const { data, error } =
+        await supabase
+            .from("wallet_transactions")
+            .select("*")
+            .eq("user_id", currentProfile.id)
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+    walletTransactions =
+        data || [];
+
+    renderTransactions();
+
+}
+
+function renderTransactions() {
+
+    const container =
+        document.getElementById(
+            "transaction-list"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (walletTransactions.length === 0) {
+
+        container.innerHTML =
+            "<p>No Transactions</p>";
+
+        return;
+
+    }
+
+    walletTransactions.forEach(tx => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "transaction-item";
+
+        item.innerHTML = `
+
+            <div>${tx.type}</div>
+
+            <div>${tx.amount}</div>
+
+            <div>${new Date(
+                tx.created_at
+            ).toLocaleString()}</div>
+
+        `;
+
+        container.appendChild(item);
+
+    });
+
+}
+
+/* ==========================================================
+            LIVE WALLET REFRESH
+========================================================== */
+
+async function refreshWallet() {
+
+    await loadWallet();
+
+    await loadTransactions();
+
+}
