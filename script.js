@@ -528,3 +528,189 @@ function bindWithdrawButton() {
     );
 
 }
+
+/* ==========================================================
+                RECHARGE HISTORY
+========================================================== */
+
+async function loadRechargeRequests() {
+
+    if (!currentProfile)
+        return;
+
+    const { data, error } =
+        await supabase
+            .from("recharge_requests")
+            .select("*")
+            .eq("user_id", currentProfile.id)
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+    rechargeRequests =
+        data || [];
+
+    renderRechargeHistory();
+
+}
+
+function renderRechargeHistory() {
+
+    const container =
+        document.getElementById(
+            "recharge-history"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (rechargeRequests.length === 0) {
+
+        container.innerHTML =
+            "<p>No Recharge Requests</p>";
+
+        return;
+
+    }
+
+    rechargeRequests.forEach(request => {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "history-card";
+
+        div.innerHTML = `
+
+            <h4>₹${request.amount}</h4>
+
+            <p>UTR :
+            ${request.utr_number}</p>
+
+            <p>Status :
+            ${request.status}</p>
+
+            <small>
+            ${new Date(
+                request.created_at
+            ).toLocaleString()}
+            </small>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+/* ==========================================================
+                WITHDRAW HISTORY
+========================================================== */
+
+async function loadWithdrawRequests() {
+
+    if (!currentProfile)
+        return;
+
+    const { data, error } =
+        await supabase
+            .from("withdraw_requests")
+            .select("*")
+            .eq("user_id", currentProfile.id)
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+    withdrawRequests =
+        data || [];
+
+    renderWithdrawHistory();
+
+}
+
+function renderWithdrawHistory() {
+
+    const container =
+        document.getElementById(
+            "withdraw-history"
+        );
+
+    if (!container)
+        return;
+
+    container.innerHTML = "";
+
+    if (withdrawRequests.length === 0) {
+
+        container.innerHTML =
+            "<p>No Withdraw Requests</p>";
+
+        return;
+
+    }
+
+    withdrawRequests.forEach(request => {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "history-card";
+
+        div.innerHTML = `
+
+            <h4>₹${request.amount}</h4>
+
+            <p>
+            ${request.upi_id}
+            </p>
+
+            <p>
+            ${request.status}
+            </p>
+
+            <small>
+            ${new Date(
+                request.created_at
+            ).toLocaleString()}
+            </small>
+
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+/* ==========================================================
+                REFRESH REQUESTS
+========================================================== */
+
+async function refreshRequests() {
+
+    await loadRechargeRequests();
+
+    await loadWithdrawRequests();
+
+}
