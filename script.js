@@ -9,28 +9,25 @@ import {
 } from "./js/supabase.js";
 
 /* ==========================================================
-                    GLOBAL STATE
+                        GLOBAL STATE
 ========================================================== */
 
 let currentUser = null;
 let currentProfile = null;
 
 let walletBalance = 0;
+let winCoins = 0;
 
 let rechargeRequests = [];
-
 let withdrawRequests = [];
-
 let tournaments = [];
-
 let participants = [];
-
 let walletTransactions = [];
 
 const ui = {};
 
 /* ==========================================================
-                    CACHE DOM
+                        CACHE DOM
 ========================================================== */
 
 function cacheDom() {
@@ -50,31 +47,34 @@ function cacheDom() {
     ui.wallet =
         document.getElementById("wallet");
 
+    ui.winWallet =
+        document.getElementById("win-wallet");
+
     ui.logoutButton =
         document.getElementById("logout-button");
 
 }
 
 /* ==========================================================
-                SHOW MESSAGE
+                        TOAST
 ========================================================== */
 
-function showToast(message) {
+function showToast(message, type = "info") {
 
-    console.log(message);
+    console.log(`[${type}] ${message}`);
 
 }
 
 /* ==========================================================
-                AUTH CHECK
+                    AUTH CHECK
 ========================================================== */
 
 async function checkAuthentication() {
 
-    const ok =
+    const authenticated =
         await requireAuth();
 
-    if (!ok) {
+    if (!authenticated) {
 
         window.location.href =
             "login.html";
@@ -88,7 +88,7 @@ async function checkAuthentication() {
 }
 
 /* ==========================================================
-                LOAD PROFILE
+                    LOAD PROFILE
 ========================================================== */
 
 async function loadCurrentProfile() {
@@ -96,20 +96,29 @@ async function loadCurrentProfile() {
     currentProfile =
         await loadProfile();
 
-    if (!currentProfile)
+    if (!currentProfile) {
+
+        window.location.href =
+            "login.html";
+
         return;
+
+    }
 
     currentUser = currentProfile;
 
     walletBalance =
-        currentProfile.wallet_balance || 0;
+        Number(currentProfile.coins) || 0;
+
+    winCoins =
+        Number(currentProfile.win_coins) || 0;
 
     updateProfileUI();
 
 }
 
 /* ==========================================================
-                UPDATE PROFILE UI
+                    UPDATE PROFILE UI
 ========================================================== */
 
 function updateProfileUI() {
@@ -119,179 +128,51 @@ function updateProfileUI() {
 
     if (ui.username)
         ui.username.textContent =
-            currentProfile.username;
+            currentProfile.username || "";
 
     if (ui.email)
         ui.email.textContent =
-            currentProfile.email;
+            currentProfile.email || "";
 
     if (ui.wallet)
         ui.wallet.textContent =
             walletBalance;
 
+    if (ui.winWallet)
+        ui.winWallet.textContent =
+            winCoins;
+
 }
 
 /* ==========================================================
-                PANEL CONTROL
+                    PANEL CONTROL
 ========================================================== */
 
 function showUserPanel() {
 
-    if (ui.userPanel)
-        ui.userPanel.classList.remove("hidden");
+    ui.userPanel?.classList.remove("hidden");
 
-    if (ui.adminPanel)
-        ui.adminPanel.classList.add("hidden");
+    ui.adminPanel?.classList.add("hidden");
 
 }
 
 function showAdminPanel() {
 
-    if (ui.adminPanel)
-        ui.adminPanel.classList.remove("hidden");
+    ui.adminPanel?.classList.remove("hidden");
 
-    if (ui.userPanel)
-        ui.userPanel.classList.add("hidden");
+    ui.userPanel?.classList.add("hidden");
 
 }
 
 /* ==========================================================
-                ROLE CHECK
+                    ROLE CHECK
 ========================================================== */
 
 function isAdmin() {
 
-    return currentProfile?.role === "admin";
-
-}
-
-/* ==========================================================
-                    WALLET
-========================================================== */
-
-async function loadWallet() {
-
-    if (!currentProfile) return;
-
-    const { data, error } =
-        await supabase
-            .from("profiles")
-            .select("wallet_balance")
-            .eq("id", currentProfile.id)
-            .single();
-
-    if (error) {
-
-        console.error(error);
-        return;
-
-    }
-
-    walletBalance =
-        data.wallet_balance || 0;
-
-    updateWalletUI();
-
-}
-
-function updateWalletUI() {
-
-    if (!ui.wallet)
-        return;
-
-    ui.wallet.textContent =
-        walletBalance;
-
-}
-
-/* ==========================================================
-                TRANSACTIONS
-========================================================== */
-
-async function loadTransactions() {
-
-    if (!currentProfile)
-        return;
-
-    const { data, error } =
-        await supabase
-            .from("wallet_transactions")
-            .select("*")
-            .eq("user_id", currentProfile.id)
-            .order("created_at", {
-                ascending: false
-            });
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-
-    }
-
-    walletTransactions =
-        data || [];
-
-    renderTransactions();
-
-}
-
-function renderTransactions() {
-
-    const container =
-        document.getElementById(
-            "transaction-list"
-        );
-
-    if (!container)
-        return;
-
-    container.innerHTML = "";
-
-    if (walletTransactions.length === 0) {
-
-        container.innerHTML =
-            "<p>No Transactions</p>";
-
-        return;
-
-    }
-
-    walletTransactions.forEach(tx => {
-
-        const item =
-            document.createElement("div");
-
-        item.className =
-            "transaction-item";
-
-        item.innerHTML = `
-
-            <div>${tx.type}</div>
-
-            <div>${tx.amount}</div>
-
-            <div>${new Date(
-                tx.created_at
-            ).toLocaleString()}</div>
-
-        `;
-
-        container.appendChild(item);
-
-    });
-
-}
-
-/* ==========================================================
-            LIVE WALLET REFRESH
-========================================================== */
-
-async function refreshWallet() {
-
-    await loadWallet();
-
-    await loadTransactions();
+    return (
+        currentProfile?.role === "admin" ||
+        currentProfile?.role_name === "admin"
+    );
 
 }
