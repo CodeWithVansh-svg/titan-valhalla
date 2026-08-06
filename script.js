@@ -328,3 +328,203 @@ async function refreshWallet() {
     await loadTransactions();
 
 }
+
+/* ==========================================================
+                RECHARGE REQUEST
+========================================================== */
+
+async function submitRecharge(
+    amount,
+    utrNumber,
+    screenshotUrl = ""
+) {
+
+    if (!currentProfile)
+        return false;
+
+    const { error } =
+        await supabase
+            .from("recharge_requests")
+            .insert({
+
+                user_id:
+                    currentProfile.id,
+
+                amount:
+                    Number(amount),
+
+                utr_number:
+                    utrNumber,
+
+                screenshot_url:
+                    screenshotUrl,
+
+                status:
+                    "pending"
+
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            error.message,
+            "error"
+        );
+
+        return false;
+
+    }
+
+    showToast(
+        "Recharge request submitted.",
+        "success"
+    );
+
+    return true;
+
+}
+
+/* ==========================================================
+                WITHDRAW REQUEST
+========================================================== */
+
+async function submitWithdraw(
+    amount,
+    upiId
+) {
+
+    if (!currentProfile)
+        return false;
+
+    if (
+        Number(amount) >
+        walletBalance
+    ) {
+
+        showToast(
+            "Insufficient Coins",
+            "error"
+        );
+
+        return false;
+
+    }
+
+    const { error } =
+        await supabase
+            .from("withdraw_requests")
+            .insert({
+
+                user_id:
+                    currentProfile.id,
+
+                amount:
+                    Number(amount),
+
+                upi_id:
+                    upiId,
+
+                status:
+                    "pending"
+
+            });
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            error.message,
+            "error"
+        );
+
+        return false;
+
+    }
+
+    showToast(
+        "Withdraw request submitted.",
+        "success"
+    );
+
+    return true;
+
+}
+
+/* ==========================================================
+            BUTTON EVENTS
+========================================================== */
+
+function bindRechargeButton() {
+
+    const form =
+        document.getElementById(
+            "recharge-form"
+        );
+
+    if (!form)
+        return;
+
+    form.addEventListener(
+        "submit",
+        async function (e) {
+
+            e.preventDefault();
+
+            const amount =
+                form.amount.value;
+
+            const utr =
+                form.utr.value;
+
+            await submitRecharge(
+
+                amount,
+
+                utr
+
+            );
+
+        }
+
+    );
+
+}
+
+function bindWithdrawButton() {
+
+    const form =
+        document.getElementById(
+            "withdraw-form"
+        );
+
+    if (!form)
+        return;
+
+    form.addEventListener(
+        "submit",
+        async function (e) {
+
+            e.preventDefault();
+
+            const amount =
+                form.amount.value;
+
+            const upi =
+                form.upi.value;
+
+            await submitWithdraw(
+
+                amount,
+
+                upi
+
+            );
+
+        }
+
+    );
+
+}
