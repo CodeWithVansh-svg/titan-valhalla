@@ -9,173 +9,117 @@
 </head>
 <body class="bg-gradient-to-b from-[#050810] via-[#0a1428] to-[#0f2747] min-h-screen">
     <div id="app-content" class="max-w-4xl mx-auto my-12 p-10 bg-white rounded-3xl shadow-2xl border border-gray-100">
-        <h1 class="m-0 mb-8 text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#2563eb] to-[#38bdf8] bg-clip-text text-transparent">Welcome</h1>
-        <div class="mb-8">
-            <a href="login.html" class="inline-block px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Go to Login Page</a>
-        </div>
-        <div class="flex gap-4 flex-wrap mb-8">
-            <button id="tournament-button" type="button" class="hidden px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Go to Tournament App</button>
-            <button id="logout-button" type="button" class="hidden px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Logout</button>
+        <div class="flex items-center justify-between gap-4 mb-8 flex-wrap">
+            <h1 class="m-0 text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#2563eb] to-[#38bdf8] bg-clip-text text-transparent">Welcome</h1>
+            <div class="flex gap-3 flex-wrap">
+                <a href="tournament.html" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">⚔️ Tournaments</a>
+                <button id="logout-button" type="button" class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Logout</button>
+            </div>
         </div>
 
+        <!-- ================= ADMIN PANEL ================= -->
         <div id="admin-panel" class="hidden">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2 pb-3 border-b-4 border-[#2563eb] inline-block">Admin Dashboard</h2>
-            <p id="admin-contact-phone" class="text-gray-500 text-sm mb-6"></p>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-4 border-[#2563eb] inline-block">Admin Dashboard</h2>
 
-            <div id="danger-zone" class="mb-8 p-6 bg-red-50 border-2 border-red-300 rounded-2xl">
-                <h3 class="text-lg font-bold text-red-700 mb-2 flex items-center gap-2">⚠️ Danger Zone</h3>
-                <p class="text-red-700 text-sm mb-4">This permanently deletes <strong>all</strong> registered accounts, emails, passwords, and coins stored in Local Storage. This cannot be undone. A passcode is required to confirm.</p>
-                <button id="danger-reset-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">⚠️ Reset All Local Storage Data</button>
-                <p id="danger-reset-message" class="mt-3 text-sm font-medium"></p>
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">👥 Registered Accounts</h3>
+                <div id="admin-users" class="grid gap-3 sm:grid-cols-2"></div>
             </div>
 
-            <div id="lonewolf-room-config" class="mt-6 bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">⚔️ Lonewolf 1v1 — Room Settings</h3>
-                <div class="space-y-5">
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Room ID</span>
-                        <input id="lonewolf-room-name-input" type="text" placeholder="e.g. LonewolfRoom1" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Room Password</span>
-                        <input id="lonewolf-room-pass-input" type="text" placeholder="Set room password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Join Before (Time)</span>
-                        <input id="lonewolf-room-deadline-input" type="time" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                        <span class="block text-gray-500 text-xs mt-1">Optional. Room ID & password auto-reveal to joined players 5 minutes before this time. Leave blank to reveal immediately on join.</span>
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Description</span>
-                        <textarea id="lonewolf-room-description-input" rows="3" placeholder="e.g. Rules, map, timing notes for players..." class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300"></textarea>
-                        <span class="block text-gray-500 text-xs mt-1">Shown on the tournament card to all players, joined or not.</span>
-                    </label>
-                </div>
-                <div class="flex gap-3 flex-wrap mt-6">
-                    <button id="lonewolf-save-room-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Save Room</button>
-                    <button id="lonewolf-reset-room-btn" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300 relative overflow-hidden">Reset Room</button>
-                </div>
-                <p id="lonewolf-room-saved-message" class="mt-4 text-gray-600 text-sm font-medium"></p>
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">⚡ Pending Recharge Requests</h3>
+                <div id="pending-recharges" class="grid gap-3 sm:grid-cols-2"></div>
             </div>
 
-            <div id="cs1v1-room-config" class="mt-6 bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">🔫 CS 1v1 Custom — Room Settings</h3>
-                <div class="space-y-5">
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Room ID</span>
-                        <input id="cs1v1-room-name-input" type="text" placeholder="e.g. CSRoom1" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Room Password</span>
-                        <input id="cs1v1-room-pass-input" type="text" placeholder="Set room password" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Join Before (Time)</span>
-                        <input id="cs1v1-room-deadline-input" type="time" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
-                        <span class="block text-gray-500 text-xs mt-1">Optional. Room ID & password auto-reveal to joined players 5 minutes before this time. Leave blank to reveal immediately on join.</span>
-                    </label>
-                    <label class="block">
-                        <span class="block text-gray-900 font-semibold mb-2">Description</span>
-                        <textarea id="cs1v1-room-description-input" rows="3" placeholder="e.g. Rules, map, timing notes for players..." class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300"></textarea>
-                        <span class="block text-gray-500 text-xs mt-1">Shown on the tournament card to all players, joined or not.</span>
-                    </label>
-                </div>
-                <div class="flex gap-3 flex-wrap mt-6">
-                    <button id="cs1v1-save-room-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">Save Room</button>
-                    <button id="cs1v1-reset-room-btn" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300 relative overflow-hidden">Reset Room</button>
-                </div>
-                <p id="cs1v1-room-saved-message" class="mt-4 text-gray-600 text-sm font-medium"></p>
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">💸 Pending Withdrawal Requests</h3>
+                <div id="pending-withdraws" class="grid gap-3 sm:grid-cols-2"></div>
             </div>
-
-            <div id="withdrawal-requests-section" class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">💸 Withdrawal Requests</h3>
-                <ul id="withdrawal-requests-list" class="space-y-2"></ul>
-            </div>
-
-            <p class="text-gray-900 font-semibold mb-3">Registered accounts:</p>
-            <ul id="registered-users" class="space-y-2"></ul>
         </div>
 
+        <!-- ================= USER PANEL ================= -->
         <div id="user-panel" class="hidden">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-4 border-[#2563eb] inline-block">Your Account</h2>
+
             <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
-                <button id="profile-open-btn" type="button" class="w-full flex items-center gap-4 mb-5 p-3 -m-3 rounded-xl hover:bg-blue-50 transition-colors duration-200 text-left">
+                <div class="flex items-center gap-4 mb-5">
                     <span class="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-r from-[#2563eb] to-[#38bdf8] text-white text-xl font-bold shadow-md">👤</span>
-                    <span>
-                        <span id="user-welcome" class="block text-gray-900 font-semibold text-lg"></span>
-                        <span id="user-email" class="block text-gray-500 text-sm"></span>
-                    </span>
-                    <span class="ml-auto text-gray-400 text-sm">View stats →</span>
-                </button>
-                <p class="text-gray-900 mb-6"><span class="text-lg font-bold text-[#2563eb]" id="user-coins">0</span> coins</p>
-                <div class="flex flex-wrap gap-3 mb-6">
-                    <button id="recharge-button" type="button" class="px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#38bdf8] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">⚡ Recharge</button>
-                    <button id="withdraw-button" type="button" class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">💸 Withdraw</button>
-                    <button id="wallet-history-button" type="button" class="px-6 py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 hover:bg-white hover:border-[#2563eb] hover:text-[#2563eb] transition-all duration-300">📜 Wallet History</button>
+                    <div>
+                        <p id="username" class="text-gray-900 font-semibold text-lg"></p>
+                        <p id="email" class="text-gray-500 text-sm"></p>
+                    </div>
                 </div>
-                <div id="user-room-info" class="space-y-3">
-                    <p id="room-status" class="text-gray-700"></p>
-                    <p id="user-room-name" class="font-semibold text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-4 rounded-lg fade-in"></p>
-                    <p id="user-room-password" class="font-semibold text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-4 rounded-lg fade-in"></p>
-                    <p id="join-info" class="text-gray-700 mt-4">Visit the <a href="tournament.html" class="text-[#2563eb] font-semibold hover:underline">Tournament page</a> to join Matches.</p>
+                <div class="flex flex-wrap gap-4">
+                    <div class="px-5 py-3 bg-blue-50 border border-blue-200 rounded-xl">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Coins</p>
+                        <p id="wallet" class="text-2xl font-bold text-[#2563eb]">0</p>
+                    </div>
+                    <div class="px-5 py-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Win Coins</p>
+                        <p id="win-wallet" class="text-2xl font-bold text-emerald-600">0</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="guest-panel" class="hidden">
-            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md">
-                <p id="guest-message" class="text-gray-700 text-lg mb-4">Please log in to see your dashboard.</p>
-                <p><a href="login.html" class="inline-block px-6 py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Go to Login Page</a></p>
+            <!-- ---- Recharge ---- -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">⚡ Recharge</h3>
+                <div class="flex flex-col sm:flex-row gap-6 items-start">
+                    <img src="payment-qr.jpg" alt="Payment QR code" class="w-48 h-48 object-contain rounded-xl border-2 border-gray-200 flex-shrink-0" />
+                    <div class="flex-1 w-full">
+                        <p class="text-sm text-gray-600 mb-4">Scan the QR code and pay, then enter the amount and the UTR / transaction reference number below. Your coins will be credited once an admin approves it.</p>
+                        <form id="recharge-form" class="space-y-4">
+                            <label class="block">
+                                <span class="block text-gray-900 font-semibold mb-2">Amount (coins, min 10)</span>
+                                <input name="amount" type="number" min="10" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                            </label>
+                            <label class="block">
+                                <span class="block text-gray-900 font-semibold mb-2">UTR / Transaction ID</span>
+                                <input name="utr" type="text" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                            </label>
+                            <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-[#2563eb] to-[#38bdf8] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Submit Recharge Request</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div id="recharge-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 id="recharge-modal-title" class="text-xl font-bold text-gray-900">⚡ Recharge Coins</h3>
-                <button id="recharge-modal-close" type="button" aria-label="Close recharge menu" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            <!-- ---- Withdraw ---- -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">💸 Withdraw</h3>
+                <p class="text-sm text-gray-600 mb-4">Only <strong>win coins</strong> can be withdrawn (minimum 30), between 2:00 PM – 9:00 PM, and only when you're not currently in a match. Coins are deducted immediately; payout reaches your account in 4–5 hours.</p>
+                <form id="withdraw-form" class="space-y-4">
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Amount (win coins, min 30)</span>
+                        <input name="amount" type="number" min="30" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                    </label>
+                    <label class="block">
+                        <span class="block text-gray-900 font-semibold mb-2">Your UPI ID</span>
+                        <input name="upi" type="text" required placeholder="e.g. yourname@upi" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:border-[#2563eb] focus:bg-white transition-all duration-300" />
+                    </label>
+                    <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Submit Withdrawal Request</button>
+                </form>
             </div>
-            <div id="recharge-modal-body" class="p-6 space-y-4"></div>
-        </div>
-    </div>
 
-    <div id="withdraw-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 id="withdraw-modal-title" class="text-xl font-bold text-gray-900">💸 Withdraw Coins</h3>
-                <button id="withdraw-modal-close" type="button" aria-label="Close withdraw menu" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            <!-- ---- Wallet transactions ---- -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">📜 Wallet History</h3>
+                <div id="transaction-list" class="space-y-2"></div>
             </div>
-            <div id="withdraw-modal-body" class="p-6 space-y-4"></div>
-        </div>
-    </div>
 
-    <div id="wallet-history-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900">📜 Wallet History</h3>
-                <button id="wallet-history-modal-close" type="button" aria-label="Close wallet history" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            <!-- ---- Recharge history ---- -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">⚡ Recharge History</h3>
+                <div id="recharge-history" class="grid gap-3 sm:grid-cols-2"></div>
             </div>
-            <div id="wallet-history-modal-body" class="p-6 space-y-3"></div>
-        </div>
-    </div>
 
-    <div id="player-stats-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900">🎮 Player Profile</h3>
-                <button id="player-stats-modal-close" type="button" aria-label="Close player profile" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            <!-- ---- Withdraw history ---- -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-7 shadow-md mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">💸 Withdrawal History</h3>
+                <div id="withdraw-history" class="grid gap-3 sm:grid-cols-2"></div>
             </div>
-            <div id="player-stats-modal-body" class="p-6 space-y-4"></div>
         </div>
     </div>
 
     <script type="module" src="script.js"></script>
-    
-    <script type="module">
-import { requireAuth } from "./js/auth.js";
-
-await requireAuth();
-</script>
 </body>
 </html>
